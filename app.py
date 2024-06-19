@@ -3,27 +3,27 @@ import openai
 import PyPDF2
 import os
 from dotenv import load_dotenv
-
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
-
 # Set up OpenAI API key
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-
+openai.api_key = os.getenv('OPENAI_API_KEY')
 def generate_response(prompt):
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=150,
             temperature=0.7,
         )
-        return response.choices[0].text.strip()
+        return response.choices[0].message['content'].strip()
+    except openai.error.RateLimitError:
+        st.error("RateLimitError: You have exceeded your API quota. Please check your OpenAI plan and billing details.")
+        return None
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API Error: {e}")
-        return None
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
         return None
 
 def generate_image(prompt):
@@ -32,6 +32,17 @@ def generate_image(prompt):
             prompt=prompt,
             n=1,
             size="1024x1024"
+
+    
+        
+          
+    
+
+        
+        Expand All
+    
+    @@ -43,6 +43,9 @@ def generate_image(prompt):
+  
         )
         image_url = response['data'][0]['url']
         return image_url
@@ -44,14 +55,72 @@ def generate_image(prompt):
 
 # Set page configuration including the favicon
 st.set_page_config(
-    page_title="Javier's GPT Bot",
-    page_icon="https://example.com/path/to/favicon.ico",  # Replace with your favicon URL
+    page_title="Javier's GPT Chat Bot",
+    page_icon="./robot.png",  # Replace with your favicon URL
 )
+# Custom CSS for styling
+st.markdown(
+    """
+    <style>
+    .main {
+        background-color: #0E1117;
+    }
+    .stTextInput > div > input {
+        background-color: #e6eaf0;
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        color: #333;
+        
+        
+    }
 
-st.title("🧠 Genius Bot")
-st.write("Ask me anything!")
+    
+          
+            
+    
+
+          
+          Expand Down
+    
+    
+  
+    .stTextArea > div > textarea {
+        background-color: #e6eaf0;
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        color: #333;
+        
+       
+    }
+    .stButton > button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .stButton > button:hover {
+        background-color: #45a049;
+    }
+    .stAlert {
+        background-color: #ffdede;
+        color: #333;
+        border: 1px solid #f5c6cb;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.title("🧠 GeniusBot: AI-Powered Assistance with PDF Insight")
+st.write("Made by Xavcode")
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
-
 if uploaded_file:
     reader = PyPDF2.PdfFileReader(uploaded_file)
     pdf_text = ""
@@ -59,19 +128,16 @@ if uploaded_file:
         page = reader.getPage(page_num)
         pdf_text += page.extract_text()
     st.text_area("Extracted PDF Text:", value=pdf_text, height=300)
-
 # Initialize session state if not already done
 if 'messages' not in st.session_state:
-    st.session_state['messages'] = [("assistant", "Hello, welcome to Javier's GPT Bot!")]
-
+    st.session_state['messages'] = [("assistant", "Hello, I am a GeniusBot: AI-Powered Assistance with PDF Insight. Developed by Javier Leon using gpt-3.5-turbo and Dall-e 3. How can I help you?")]
 # Display chat messages from history on the app
 for role, message in st.session_state['messages']:
     if role == 'user':
         st.chat_message("user").write(message)
     else:
         st.chat_message("assistant").write(message)
-
-# Get user input for chat
+# Get user input
 prompt = st.chat_input("Say something")
 if prompt:
     # Check if the prompt is for image generation
@@ -80,28 +146,23 @@ if prompt:
         with st.spinner("Generating image..."):
             image_url = generate_image(prompt)
             if image_url:
-                # Display the image
                 st.image(image_url, caption="Generated Image")
-                # Provide a message with a clickable link to open the image in a new window
+                st.write(f"[Open Image in a separate window]({image_url})")
+                # Store the image prompt in session state
                 st.session_state['messages'].append(("user", prompt))
-                st.session_state['messages'].append(("assistant", f"Here is the image based on your prompt: [Open Image in New Window]({image_url})"))
+                st.session_state['messages'].append(("assistant", f"Here is the image based on your prompt: {prompt}"))
             else:
-                st.error("Failed to generate image.")
+                st.write("Failed to generate image.")
     else:
         # Immediately display the user's message
+        st.chat_message("user").write(prompt)
         st.session_state['messages'].append(("user", prompt))
-
         # Placeholder for assistant's response
         with st.spinner("Assistant is typing..."):
             response = generate_response(prompt)
         
-        if response:
+        if response and not response.lower().startswith("i'm sorry, but i'm unable to directly generate images."):
             # Append the assistant's response to the session state
             st.session_state['messages'].append(("assistant", response))
-
-    # Display chat messages from history on the app
-    for role, message in st.session_state['messages']:
-        if role == 'user':
-            st.chat_message("user").write(message)
-        else:
-            st.chat_message("assistant").write(message)
+            # Display the assistant's response
+            st.chat_message("assistant").write(response)
