@@ -3,10 +3,14 @@ import openai
 import PyPDF2
 import os
 from dotenv import load_dotenv
+
 # Load environment variables from .env file
 load_dotenv()
+
+
 # Set up OpenAI API key
 openai.api_key = os.getenv('OPENAI_API_KEY')
+
 def generate_response(prompt):
     try:
         response = openai.ChatCompletion.create(
@@ -15,7 +19,7 @@ def generate_response(prompt):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=150,
+            max_tokens=50,
             temperature=0.7,
         )
         return response.choices[0].message['content'].strip()
@@ -32,25 +36,11 @@ def generate_image(prompt):
             prompt=prompt,
             n=1,
             size="1024x1024"
-
-    
-        
-          
-    
-
-        
-        Expand All
-    
-    @@ -43,6 +43,9 @@ def generate_image(prompt):
-  
         )
         image_url = response['data'][0]['url']
         return image_url
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API Error: {e}")
-        return None
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
         return None
 
 # Set page configuration including the favicon
@@ -58,6 +48,7 @@ st.set_page_config(
     page_title="Javier's GPT Chat Bot",
     page_icon="./robot.png",  # Replace with your favicon URL
 )
+
 # Custom CSS for styling
 st.markdown(
     """
@@ -74,17 +65,6 @@ st.markdown(
         
         
     }
-
-    
-          
-            
-    
-
-          
-          Expand Down
-    
-    
-  
     .stTextArea > div > textarea {
         background-color: #e6eaf0;
         border-radius: 10px;
@@ -118,9 +98,11 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 st.title("🧠 GeniusBot: AI-Powered Assistance with PDF Insight")
 st.write("Made by Xavcode")
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
+
 if uploaded_file:
     reader = PyPDF2.PdfFileReader(uploaded_file)
     pdf_text = ""
@@ -128,15 +110,21 @@ if uploaded_file:
         page = reader.getPage(page_num)
         pdf_text += page.extract_text()
     st.text_area("Extracted PDF Text:", value=pdf_text, height=300)
+
+
+
+
 # Initialize session state if not already done
 if 'messages' not in st.session_state:
     st.session_state['messages'] = [("assistant", "Hello, I am a GeniusBot: AI-Powered Assistance with PDF Insight. Developed by Javier Leon using gpt-3.5-turbo and Dall-e 3. How can I help you?")]
+
 # Display chat messages from history on the app
 for role, message in st.session_state['messages']:
     if role == 'user':
         st.chat_message("user").write(message)
     else:
         st.chat_message("assistant").write(message)
+
 # Get user input
 prompt = st.chat_input("Say something")
 if prompt:
@@ -157,10 +145,11 @@ if prompt:
         # Immediately display the user's message
         st.chat_message("user").write(prompt)
         st.session_state['messages'].append(("user", prompt))
+
         # Placeholder for assistant's response
         with st.spinner("Assistant is typing..."):
             response = generate_response(prompt)
-        
+
         if response and not response.lower().startswith("i'm sorry, but i'm unable to directly generate images."):
             # Append the assistant's response to the session state
             st.session_state['messages'].append(("assistant", response))
