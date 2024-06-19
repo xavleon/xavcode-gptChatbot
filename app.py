@@ -114,11 +114,9 @@ if uploaded_file:
     st.text_area("Extracted PDF Text:", value=pdf_text, height=300)
 
 
-
-
 # Initialize session state if not already done
 if 'messages' not in st.session_state:
-    st.session_state['messages'] = [("assistant", "Hello, I am a GeniusBot: AI-Powered Assistance with PDF Insight. Developed by Javier Leon using gpt-3.5-turbo and Dall-e 3. How can I help you?")]
+    st.session_state['messages'] = [("assistant", "Hello, welcome to Javier's GPT Bot!")]
 
 # Display chat messages from history on the app
 for role, message in st.session_state['messages']:
@@ -127,7 +125,7 @@ for role, message in st.session_state['messages']:
     else:
         st.chat_message("assistant").write(message)
 
-# Get user input
+# Get user input for chat
 prompt = st.chat_input("Say something")
 if prompt:
     # Check if the prompt is for image generation
@@ -136,24 +134,28 @@ if prompt:
         with st.spinner("Generating image..."):
             image_url = generate_image(prompt)
             if image_url:
+                # Display the image
                 st.image(image_url, caption="Generated Image")
-                st.write(f"[Open Image in a separate window]({image_url})")
-                # Store the image prompt in session state
+                # Provide a message with a clickable link to open the image in a new window
                 st.session_state['messages'].append(("user", prompt))
-                st.session_state['messages'].append(("assistant", f"Here is the image based on your prompt: {prompt}"))
+                st.session_state['messages'].append(("assistant", f"Here is the image based on your prompt: [Open Image in New Window]({image_url})"))
             else:
-                st.write("Failed to generate image.")
+                st.error("Failed to generate image.")
     else:
         # Immediately display the user's message
-        st.chat_message("user").write(prompt)
         st.session_state['messages'].append(("user", prompt))
 
         # Placeholder for assistant's response
         with st.spinner("Assistant is typing..."):
             response = generate_response(prompt)
         
-        if response and not response.lower().startswith("i'm sorry, but i'm unable to directly generate images."):
+        if response:
             # Append the assistant's response to the session state
             st.session_state['messages'].append(("assistant", response))
-            # Display the assistant's response
-            st.chat_message("assistant").write(response)
+
+    # Display chat messages from history on the app
+    for role, message in st.session_state['messages']:
+        if role == 'user':
+            st.chat_message("user").write(message)
+        else:
+            st.chat_message("assistant").write(message)
