@@ -19,9 +19,10 @@ def generate_response(prompt):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=50,
+            max_tokens=150,
             temperature=0.7,
         )
+
         return response.choices[0].message['content'].strip()
     except openai.error.RateLimitError:
         st.error("RateLimitError: You have exceeded your API quota. Please check your OpenAI plan and billing details.")
@@ -32,7 +33,7 @@ def generate_response(prompt):
     
 def generate_image(prompt):
     try:
-        response = openai.Image.create(
+         response = openai.Image.create(
             prompt=prompt,
             n=1,
             size="1024x1024"
