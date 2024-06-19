@@ -4,12 +4,11 @@ import PyPDF2
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-
 # Set up OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 def generate_response(prompt):
     try:
@@ -22,15 +21,14 @@ def generate_response(prompt):
             max_tokens=150,
             temperature=0.7,
         )
-
-        return response.choices[0].message['content'].strip()
-    except openai.error.RateLimitError:
-        st.error("RateLimitError: You have exceeded your API quota. Please check your OpenAI plan and billing details.")
-        return None
+        return response['choices'][0]['message']['content'].strip()
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API Error: {e}")
         return None
-    
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+        return None
+
 def generate_image(prompt):
     try:
         response = openai.Image.create(
