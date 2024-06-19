@@ -22,7 +22,7 @@ def generate_response(prompt):
             temperature=0.7,
         )
         return response['choices'][0]['message']['content'].strip()
-    except openai.error.OpenAIError as e:
+    except openai.OpenAIError as e:
         st.error(f"OpenAI API Error: {e}")
         return None
     except Exception as e:
@@ -38,71 +38,21 @@ def generate_image(prompt):
         )
         image_url = response['data'][0]['url']
         return image_url
-    except openai.error.OpenAIError as e:
+    except openai.OpenAIError as e:
         st.error(f"OpenAI API Error: {e}")
         return None
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
         return None
-    
+
 # Set page configuration including the favicon
 st.set_page_config(
-    page_title="Javier's GPT Chat Bot",
-    page_icon="./robot.png",  # Replace with your favicon URL
+    page_title="Javier's GPT Bot",
+    page_icon="https://example.com/path/to/favicon.ico",  # Replace with your favicon URL
 )
 
-# Custom CSS for styling
-st.markdown(
-    """
-    <style>
-    .main {
-        background-color: #0E1117;
-    }
-    .stTextInput > div > input {
-        background-color: #e6eaf0;
-        border-radius: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        color: #333;
-        
-        
-    }
-    .stTextArea > div > textarea {
-        background-color: #e6eaf0;
-        border-radius: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        color: #333;
-        
-       
-    }
-    .stButton > button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    .stButton > button:hover {
-        background-color: #45a049;
-    }
-    .stAlert {
-        background-color: #ffdede;
-        color: #333;
-        border: 1px solid #f5c6cb;
-        border-radius: 10px;
-        padding: 10px;
-        margin: 10px 0;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.title("🧠 GeniusBot: AI-Powered Assistance with PDF Insight")
-st.write("Made by Xavcode")
+st.title("🧠 Genius Bot")
+st.write("Ask me anything!")
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
 
 if uploaded_file:
@@ -112,7 +62,6 @@ if uploaded_file:
         page = reader.getPage(page_num)
         pdf_text += page.extract_text()
     st.text_area("Extracted PDF Text:", value=pdf_text, height=300)
-
 
 # Initialize session state if not already done
 if 'messages' not in st.session_state:
