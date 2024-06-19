@@ -33,7 +33,7 @@ def generate_response(prompt):
     
 def generate_image(prompt):
     try:
-         response = openai.Image.create(
+        response = openai.Image.create(
             prompt=prompt,
             n=1,
             size="1024x1024"
@@ -42,6 +42,9 @@ def generate_image(prompt):
         return image_url
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API Error: {e}")
+        return None
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
         return None
     
 # Set page configuration including the favicon
