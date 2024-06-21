@@ -3,9 +3,4 @@ streamlit
 PyPDF2
 python-dotenv
 langchain==0.0.348
-langchain-cli 0.0.19
-langchain-core 0.0.12
-langdetect 1.0.9
-langserve 0.0.35
-langsmith 0.0.69
-openai 0.28.0
+langchain-cli==0.0.19
